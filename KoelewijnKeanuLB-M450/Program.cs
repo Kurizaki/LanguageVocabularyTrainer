@@ -7,21 +7,22 @@ namespace KoelewijnKeanuLB_M450
     {
         static void Main(string[] args)
         {
-            Language language = new Language();
-            var languageSelection = language.ChooseLanguage();
-            language.GetVocabulary(languageSelection);
-            language.GetTranslation(languageSelection);
+            XmlParser _xmlParser;
+            Language _language;
+            ILesson _lesson;
+            _xmlParser = new XmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
+             _language = new Language(_xmlParser);
+            var languageSelection = _language.ChooseLanguage();
+            _lesson = new Lesson(_language.GetVocabulary(languageSelection), _language.GetTranslation(languageSelection));
         }
     }
     class Language
     {
-        private string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml");
-        private XmlDocument _xmlDocument;
+        private XmlParser _xmlParser;
 
-        public Language()
+        public Language(XmlParser xmlParser)
         {
-            _xmlDocument = new XmlDocument();
-            _xmlDocument.Load(_filePath);
+            _xmlParser = xmlParser;
         }
         public string ChooseLanguage()
         {
@@ -69,38 +70,20 @@ namespace KoelewijnKeanuLB_M450
 
         public List<string> GetVocabulary(string language)
         {
-            List<string> words = new List<string>();
-
-            XmlNodeList wordNodes = _xmlDocument.SelectNodes($"//language[@name='{language}']/word");
-
-            foreach (XmlNode node in wordNodes)
-            {
-                string word = node.InnerText;
-                words.Add(word);
-            }
-
-            return words;
+            XmlDocument xmlDocument = _xmlParser.LoadXmlDocument();
+            return _xmlParser.GetWords(language, xmlDocument);
         }
 
         public List<string> GetTranslation(string language)
         {
-            List<string> words = new List<string>();
-
-            XmlNodeList wordNodes = _xmlDocument.SelectNodes($"//language[@name='{language}']/word");
-
-            foreach (XmlNode node in wordNodes)
-            {
-                string translation = node.Attributes["translation"].Value;
-                words.Add(translation);
-            }
-
-            return words;
+            XmlDocument xmlDocument = _xmlParser.LoadXmlDocument();
+            return _xmlParser.GetTranslations(language, xmlDocument);
         }
     }
     class User
     {
         Language _language;
-        Lesson _lesson;
+        ILesson _lesson;
     }
     interface ILesson
     {
@@ -115,8 +98,7 @@ namespace KoelewijnKeanuLB_M450
     }
     class Lesson : ILesson
     {
-        int _languageNum;
-        public List<string> getRandomVocab(List<string> words) 
+        public List<string> getRandomVocabulary(List<string> words) 
         { 
 
             return words;
@@ -131,7 +113,7 @@ namespace KoelewijnKeanuLB_M450
             return false;
         }
 
-        public Lesson(int LanguageNum)
+        public Lesson(List<string> vocabulary, List<string> translation)
         {
 
         }
@@ -140,5 +122,55 @@ namespace KoelewijnKeanuLB_M450
     class MockLesson : ILesson
     {
 
+    }
+
+    class XmlParser
+    {
+
+        private string _filePath;
+
+        public XmlParser(string filePath)
+        {
+            _filePath = filePath;
+        }
+
+        public XmlDocument LoadXmlDocument()
+        {
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(_filePath);
+            return xmlDocument;
+        }
+
+        public List<string> GetWords(string language, XmlDocument xmlDocument)
+        {
+            List<string> words = new List<string>();
+
+            XmlNodeList wordNodes = xmlDocument.SelectNodes($"//language[@name='{language}']/word");
+
+            foreach (XmlNode node in wordNodes)
+            {
+                string word = node.InnerText;
+                words.Add(word);
+                Console.WriteLine(word);
+            }
+
+            return words;
+        }
+
+        public List<string> GetTranslations(string language, XmlDocument xmlDocument)
+        {
+            List<string> translations = new List<string>();
+
+            XmlNodeList wordNodes = xmlDocument.SelectNodes($"//language[@name='{language}']/word");
+
+            foreach (XmlNode node in wordNodes)
+            {
+                string translation = node.Attributes["translation"].Value;
+                translations.Add(translation);
+                Console.WriteLine(translation);
+            }
+
+            return translations;
+        }
     }
 }
