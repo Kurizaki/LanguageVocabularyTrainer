@@ -1,4 +1,6 @@
-﻿using System.Xml;
+﻿using System;
+using System.Transactions;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace KoelewijnKeanuLB_M450
@@ -7,13 +9,8 @@ namespace KoelewijnKeanuLB_M450
     {
         static void Main(string[] args)
         {
-            XmlParser _xmlParser;
-            Language _language;
-            ILesson _lesson;
-            _xmlParser = new XmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
-             _language = new Language(_xmlParser);
-            var languageSelection = _language.ChooseLanguage();
-            _lesson = new Lesson(_language.GetVocabulary(languageSelection), _language.GetTranslation(languageSelection));
+            User user = new User();
+            user.RunVocabularyTrainer();
         }
     }
     class Language
@@ -24,6 +21,7 @@ namespace KoelewijnKeanuLB_M450
         {
             _xmlParser = xmlParser;
         }
+
         public string ChooseLanguage()
         {
             int answer;
@@ -65,68 +63,91 @@ namespace KoelewijnKeanuLB_M450
 
             } while (answer < 1 || answer > 3);
 
-            return (language);
+            return language;
         }
 
-        public List<string> GetVocabulary(string language)
+        public List<string> VocabularyAndTranslation(string language)
         {
             XmlDocument xmlDocument = _xmlParser.LoadXmlDocument();
-            return _xmlParser.GetWords(language, xmlDocument);
-        }
-
-        public List<string> GetTranslation(string language)
-        {
-            XmlDocument xmlDocument = _xmlParser.LoadXmlDocument();
-            return _xmlParser.GetTranslations(language, xmlDocument);
+            return _xmlParser.GetVocabularyAndTranslations(language, xmlDocument);
         }
     }
     class User
     {
-        Language _language;
-        ILesson _lesson;
+        private XmlParser _xmlParser;
+        private Language _language;
+        private Lesson _lesson;
+
+        public User()
+        {
+            // Initialize XmlParser
+            _xmlParser = new XmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
+
+            // Initialize Language with XmlParser
+            _language = new Language(_xmlParser);
+        }
+
+        public void RunVocabularyTrainer()
+        {
+            // Choose language
+            var languageSelection = _language.ChooseLanguage();
+
+            // Start lesson with the random vocabulary
+            _lesson = new Lesson(_xmlParser.getRandomVocabularyAndTranslation(_language.VocabularyAndTranslation(languageSelection)));
+            _lesson.StartLesson();
+        }
     }
+
     interface ILesson
     {
-        public void StartLesson()
-        {
+        void StartLesson();
 
-        }
-        public bool validateAnswer(string answer) 
-        {
-            return false;
-        }
+        bool ValidateAnswer(string answer, int index);
     }
     class Lesson : ILesson
     {
-        public List<string> getRandomVocabulary(List<string> words) 
-        { 
+        List<string> _vocabularyAndTranslation;
 
-            return words;
-        }
-        public void startLesson()
+        public Lesson(List<string> vocabularyAndTranslation)
         {
-
+            _vocabularyAndTranslation = vocabularyAndTranslation;
         }
 
-        bool validateAnswer(string answer)
+        public void StartLesson()
         {
-            return false;
+            for (int i = 0; i < _vocabularyAndTranslation.Count; i += 2)
+            {
+                bool isCorrect;
+                do
+                {
+                    Console.WriteLine($"Hmm.. Do you still know what {_vocabularyAndTranslation[i + 1]} means?");
+                    isCorrect = ValidateAnswer(Console.ReadLine(), i);
+                } while (!isCorrect);
+            }
         }
 
-        public Lesson(List<string> vocabulary, List<string> translation)
+        public bool ValidateAnswer(string answer, int index)
         {
-
+            if (answer == _vocabularyAndTranslation[index])
+            {
+                Console.WriteLine("Wow You got it Right!");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Wrong Answer");
+                return false;
+            }
         }
     }
 
-    class MockLesson : ILesson
-    {
-
-    }
+    //Mock um Lektionen aufzuzeichnen
+    //class MockLesson : ILesson
+    //{
+    //}
 
     class XmlParser
     {
-
         private string _filePath;
 
         public XmlParser(string filePath)
@@ -141,36 +162,49 @@ namespace KoelewijnKeanuLB_M450
             return xmlDocument;
         }
 
-        public List<string> GetWords(string language, XmlDocument xmlDocument)
+        public List<string> GetVocabularyAndTranslations(string language, XmlDocument xmlDocument)
         {
-            List<string> words = new List<string>();
-
+            List<string> vocabularyAndTranslations = new List<string>();
             XmlNodeList wordNodes = xmlDocument.SelectNodes($"//language[@name='{language}']/word");
-
-            foreach (XmlNode node in wordNodes)
+            for (int i = 0; i < wordNodes.Count; i++)
             {
-                string word = node.InnerText;
-                words.Add(word);
-                Console.WriteLine(word);
-            }
+                string word = wordNodes[i].InnerText;
+                vocabularyAndTranslations.Add(word);
 
-            return words;
+                string translation = wordNodes[i].Attributes["translation"].Value;
+                vocabularyAndTranslations.Add(translation);
+
+                Console.WriteLine($"{word} - {translation}");
+            }
+            Console.WriteLine("Press any Button to Start.");
+            Console.ReadKey();
+            return vocabularyAndTranslations;
         }
 
-        public List<string> GetTranslations(string language, XmlDocument xmlDocument)
+        public List<string> getRandomVocabularyAndTranslation(List<string> VocabularyAndTranslation)
         {
-            List<string> translations = new List<string>();
-
-            XmlNodeList wordNodes = xmlDocument.SelectNodes($"//language[@name='{language}']/word");
-
-            foreach (XmlNode node in wordNodes)
+            List<string> RandomVocabularyAndTranslation = new List<string>();
+            Random random = new Random();
+            while (RandomVocabularyAndTranslation.Count < 10)
             {
-                string translation = node.Attributes["translation"].Value;
-                translations.Add(translation);
-                Console.WriteLine(translation);
+                int randomIndex = random.Next(0, VocabularyAndTranslation.Count - 1);
+                if (randomIndex % 2 == 1)
+                {
+                    randomIndex--;
+                }
+
+                RandomVocabularyAndTranslation.Add(VocabularyAndTranslation[randomIndex]);
+                Console.WriteLine(VocabularyAndTranslation[randomIndex]);
+                randomIndex++;
+                RandomVocabularyAndTranslation.Add(VocabularyAndTranslation[randomIndex]);
+                Console.WriteLine(VocabularyAndTranslation[randomIndex]);
             }
 
-            return translations;
+            return RandomVocabularyAndTranslation;
         }
     }
+    //Mock mit fix werte für random voci für lektionen
+    //class MockXmlParser
+    //{
+    //}
 }
