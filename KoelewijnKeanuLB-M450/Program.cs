@@ -79,16 +79,11 @@ namespace KoelewijnKeanuLB_M450
         private XmlParser _xmlParser;
         private Language _language;
         private Lesson _lesson;
-        private MockXmlParser _mockXmlParser;
-        private MockLesson _mockLesson;
 
         public User()
         {
-            // Initialize XmlParser
             _xmlParser = new XmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
-            //_mockXmlParser = new MockXmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
 
-            // Initialize Language with XmlParser
             _language = new Language(_xmlParser);
         }
 
@@ -98,9 +93,8 @@ namespace KoelewijnKeanuLB_M450
             {
                 var languageSelection = _language.ChooseLanguage();
                 _lesson = new Lesson(_xmlParser.getRandomVocabularyAndTranslation(_language.VocabularyAndTranslation(languageSelection)));
-                //_mockLesson = new MockLesson(_xmlParser.getRandomVocabularyAndTranslation(_language.VocabularyAndTranslation(languageSelection)));
                 _lesson.StartLesson();
-                _lesson.LessonStatistic();
+                _lesson.DisplayLessonStatistics();
             } while (_lesson.PlayAgain());
 
         }
@@ -168,7 +162,7 @@ namespace KoelewijnKeanuLB_M450
             return false;
         }
 
-        public void LessonStatistic()
+        public void DisplayLessonStatistics()
         {
             Console.WriteLine("You finished this Lesson!");
             if (_points == 15)
