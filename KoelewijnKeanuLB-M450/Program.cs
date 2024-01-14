@@ -2,6 +2,9 @@
 using System.Transactions;
 using System.Xml;
 using System.Xml.Linq;
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("KoelewijnKeanuLB-M450-MSTest")]
+
 
 namespace KoelewijnKeanuLB_M450
 {
@@ -22,9 +25,8 @@ namespace KoelewijnKeanuLB_M450
             _xmlParser = xmlParser;
         }
 
-        public string ChooseLanguage()
+        public string ChooseLanguage(int answer = 0)
         {
-            int answer;
             string language = "";
 
             do
@@ -84,6 +86,7 @@ namespace KoelewijnKeanuLB_M450
         {
             // Initialize XmlParser
             _xmlParser = new XmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
+            //_mockXmlParser = new MockXmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
 
             // Initialize Language with XmlParser
             _language = new Language(_xmlParser);
@@ -91,17 +94,15 @@ namespace KoelewijnKeanuLB_M450
 
         public void RunVocabularyTrainer()
         {
-            // Choose language
-            var languageSelection = _language.ChooseLanguage();
-
-            // Start lesson with the random vocabulary
             do
             {
+                var languageSelection = _language.ChooseLanguage();
                 _lesson = new Lesson(_xmlParser.getRandomVocabularyAndTranslation(_language.VocabularyAndTranslation(languageSelection)));
+                //_mockLesson = new MockLesson(_xmlParser.getRandomVocabularyAndTranslation(_language.VocabularyAndTranslation(languageSelection)));
                 _lesson.StartLesson();
                 _lesson.LessonStatistic();
-            } while (!_lesson.PlayAgain());
-            
+            } while (_lesson.PlayAgain());
+
         }
     }
 
@@ -153,7 +154,7 @@ namespace KoelewijnKeanuLB_M450
                 _tries = 0;
                 return true;
             }
-            else if (_tries < 3)
+            else if (_tries < 2)
             {
                 Console.WriteLine("Wrong answer. Try again.");
                 _tries++;
@@ -169,6 +170,7 @@ namespace KoelewijnKeanuLB_M450
 
         public void LessonStatistic()
         {
+            Console.WriteLine("You finished this Lesson!");
             if (_points == 15)
             {
                 Console.WriteLine($"You got Everything Right! Excellent work, keep it up! You got {_points} points.");
@@ -191,7 +193,7 @@ namespace KoelewijnKeanuLB_M450
         {
             do
             {
-                Console.WriteLine("Do you want to try it again? [yes] [no]");
+                Console.WriteLine("Do you want to try another Lesson? [yes] [no]");
                 string answer = Console.ReadLine().ToLower();
                 switch (answer)
                 {
@@ -203,7 +205,6 @@ namespace KoelewijnKeanuLB_M450
         }
     }
 
-    //Mock um Lektionen aufzuzeichnen
     public class MockLesson : ILesson
     {
         private int _points;
@@ -252,7 +253,7 @@ namespace KoelewijnKeanuLB_M450
 
                 return true;
             }
-            else if (_tries < 3)
+            else if (_tries < 2)
             {
                 Console.WriteLine("Wrong answer. Try again.");
                 _tries++;
@@ -294,7 +295,7 @@ namespace KoelewijnKeanuLB_M450
             Console.WriteLine($"Protocol: Bool PlayAgain is now running");
             do
             {
-                Console.WriteLine("Do you want to try it again? [yes] [no]");
+                Console.WriteLine("Do you want to try another Lesson? [yes] [no]");
                 string answer = Console.ReadLine().ToLower();
                 Console.WriteLine($"Protocol: User answer is {answer}");
                 switch (answer)
@@ -354,17 +355,19 @@ namespace KoelewijnKeanuLB_M450
                     randomIndex--;
                 }
 
+                if (RandomVocabularyAndTranslation.Contains(VocabularyAndTranslation[randomIndex]))
+                {
+                    continue;
+                }
                 RandomVocabularyAndTranslation.Add(VocabularyAndTranslation[randomIndex]);
-                Console.WriteLine(VocabularyAndTranslation[randomIndex]);
                 randomIndex++;
                 RandomVocabularyAndTranslation.Add(VocabularyAndTranslation[randomIndex]);
-                Console.WriteLine(VocabularyAndTranslation[randomIndex]);
             }
 
             return RandomVocabularyAndTranslation;
         }
     }
-    //Mock mit fix werte für random voci für lektionen
+
     class MockXmlParser
     {
         private string _filePath;
@@ -410,7 +413,7 @@ namespace KoelewijnKeanuLB_M450
                 {
                     notRandomNumber--;
                 }
-
+    
                 notRandomVocabularyAndTranslation.Add(VocabularyAndTranslation[notRandomNumber]);
                 Console.WriteLine(VocabularyAndTranslation[notRandomNumber]);
                 notRandomNumber++;
