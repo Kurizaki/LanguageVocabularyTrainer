@@ -16,8 +16,6 @@ namespace KoelewijnKeanuLB_M450_MSTest
         [TestInitialize]
         public void Setup()
         {
-            // You can initialize necessary objects or variables here before each test.
-            // For example, create a mock vocabulary for testing.
             _vocabularyAndTranslation = new List<string>
             {
                 "hello", "hola", "goodbye", "adiós", "friend", "amigo", "house", "casa", "thank you", "gracias"
