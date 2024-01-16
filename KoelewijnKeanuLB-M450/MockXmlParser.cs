@@ -53,5 +53,20 @@ namespace KoelewijnKeanuLB_M450
             }
             return notRandomVocabularyAndTranslation;
         }
+
+        public List<string> GetAvailableLanguages()
+        {
+            XmlDocument xmlDocument = LoadXmlDocument();
+            List<string> languages = new List<string>();
+
+            XmlNodeList languageNodes = xmlDocument.SelectNodes("//language");
+            foreach (XmlNode languageNode in languageNodes)
+            {
+                string languageName = languageNode.Attributes["name"].Value;
+                languages.Add(languageName);
+            }
+
+            return languages;
+        }
     }
 }

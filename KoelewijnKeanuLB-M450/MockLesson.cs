@@ -13,6 +13,11 @@ namespace KoelewijnKeanuLB_M450
             _vocabularyAndTranslation = vocabularyAndTranslation;
         }
 
+        public int GetPoints()
+        {
+            return _points;
+        }
+
         public void StartLesson()
         {
             Console.WriteLine($"Protocol: void StartLesson is now running");
@@ -66,7 +71,7 @@ namespace KoelewijnKeanuLB_M450
             return false;
         }
 
-        public void LessonStatistic()
+        public void DisplayLessonStatistics()
         {
             Console.WriteLine($"Protocol: void LessonStatistics is now running");
             if (_points == 15)

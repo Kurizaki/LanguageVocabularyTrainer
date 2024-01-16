@@ -12,8 +12,10 @@ namespace KoelewijnKeanuLB_M450.Tests
         public void MockXmlParser_Reads_Correctly()
         {
             // Arrange
-            MockXmlParser mockXmlParser = new MockXmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
-
+            //Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml")
+            string path = @"C:\Users\keanu\source\repos\KoelewijnKeanuLB-M450\KoelewijnKeanuLB-M450\Vocabulary.xml";
+            MockXmlParser mockXmlParser = new MockXmlParser(path);
+            //konnte nicht getestet werden, der Test hängt irgendwo fest.
 
             // Act
             XmlDocument xmlDocument = mockXmlParser.LoadXmlDocument();
@@ -28,7 +30,10 @@ namespace KoelewijnKeanuLB_M450.Tests
         public void MockLesson_Reads_Correctly()
         {
             // Arrange
-            MockXmlParser mockXmlParser = new MockXmlParser(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml"));
+            //Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\Vocabulary.xml")
+            string path = @"C:\Users\keanu\source\repos\KoelewijnKeanuLB-M450\KoelewijnKeanuLB-M450\Vocabulary.xml";
+            MockXmlParser mockXmlParser = new MockXmlParser(path);
+            //konnte nicht getestet werden, der Test hängt irgendwo fest.
 
             XmlDocument xmlDocument = mockXmlParser.LoadXmlDocument();
             List<string> actualList = mockXmlParser.getRandomVocabularyAndTranslation(mockXmlParser.GetVocabularyAndTranslations("Spanish", xmlDocument));
